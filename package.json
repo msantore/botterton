@@ -12,6 +12,7 @@
     "commander": "^7.2.0",
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
+    "ethereumjs-util": "^7.0.10",
     "ethereumjs-wallet": "^1.0.1",
     "express": "^4.17.1"
   }
