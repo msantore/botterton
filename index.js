@@ -1,4 +1,5 @@
 require('dotenv').config()
+require('./src/utils/ethereum')
 const express = require('express')
 const cors = require('cors')
 const app = express()
