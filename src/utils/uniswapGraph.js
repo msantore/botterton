@@ -3,9 +3,9 @@ const {getUniswapTokens, insertUniswapToken} = require('../db/models/uniswap');
 
 const queryUniswapAPI = async (dbTokens) => {
 
-  const numberOfTokens = 0;
-  const tokensPerQuery = 1000;
-  const currentQuery = numberOfTokens + tokensPerQuery;
+  let numberOfTokens = 0;
+  let tokensPerQuery = 1000;
+  let currentQuery = numberOfTokens + tokensPerQuery;
   let loopNumber = 0
 
   const query = `{
@@ -26,6 +26,7 @@ const queryUniswapAPI = async (dbTokens) => {
 
   const numberOfLoops = 10000
   for (let i = 0; i < numberOfLoops; i++) {
+    console.time('numberOfLoops');
     loopNumber++;
     await axios.post('https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v2', {query}).then(async (response) => {
       const {tokens: uniswapTokens} = response.data.data;
@@ -49,7 +50,9 @@ const queryUniswapAPI = async (dbTokens) => {
     }).catch((error) => {
       console.error(error)
     })
+    numberOfTokens + tokensPerQuery;
     console.log(loopNumber, numberOfTokens)
+    console.timeEnd('numberOfLoops')
   }
 }
 
