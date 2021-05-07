@@ -17,6 +17,7 @@ function query(sql, prams) {
       await client.query(sql, prams).then( data => {
         resolve(data)
       }).catch(error => {
+        console.log('db error', error)
         reject(error)
       })
       await client.end()

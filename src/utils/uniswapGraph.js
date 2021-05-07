@@ -48,7 +48,7 @@ const queryUniswapAPI = async (dbTokens) => {
         }
       }
     }).catch((error) => {
-      console.error(error)
+      console.error('insertUniswapToken error', error)
     })
     numberOfTokens + tokensPerQuery;
     console.log(loopNumber, numberOfTokens)
