@@ -3,55 +3,60 @@ const {getUniswapTokens, insertUniswapToken} = require('../db/models/uniswap');
 
 const queryUniswapAPI = async (dbTokens) => {
 
-  let numberOfTokens = 0;
+  const numberOfLoops = 10000
+  let numberOfTokensQueried = 0;
   let tokensPerQuery = 1000;
-  let currentQuery = numberOfTokens + tokensPerQuery;
+  let currentQuery = numberOfTokensQueried + tokensPerQuery;
   let loopNumber = 0
 
-  const query = `{
-    tokens(first: ${currentQuery}, skip: ${numberOfTokens}) {
-      id,
-      symbol,
-      name,
-      decimals,
-      totalSupply,
-      tradeVolume,
-      tradeVolumeUSD,
-      untrackedVolumeUSD,
-      txCount,
-      totalLiquidity,
-      derivedETH
-      }
-    }`
 
-  const numberOfLoops = 10000
   for (let i = 0; i < numberOfLoops; i++) {
     console.time('numberOfLoops');
+    let query = `{
+      tokens(first: ${currentQuery}, skip: ${numberOfTokensQueried}) {
+        id,
+        symbol,
+        name,
+        decimals,
+        totalSupply,
+        tradeVolume,
+        tradeVolumeUSD,
+        untrackedVolumeUSD,
+        txCount,
+        totalLiquidity,
+        derivedETH
+        }
+      }`
     loopNumber++;
+    let tokensToInsert = [];
     await axios.post('https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v2', {query}).then(async (response) => {
       const {tokens: uniswapTokens} = response.data.data;
       for (let i = 0; i < uniswapTokens.length; i++) {
         const newUniswapToken = uniswapTokens[i];
+        const isTokenAlreadyInDatabase = dbTokens.find(token => token.name === newUniswapToken.name)
         // if Token is not in Postgres, insert row
-        if (!dbTokens.includes(newUniswapToken.symbol)) {
-          const result = await insertUniswapToken(
-            newUniswapToken.symbol,
-            newUniswapToken.name,
-            newUniswapToken.decimals,
-            newUniswapToken.totalSupply,
-            newUniswapToken.tradeVolume,
-            newUniswapToken.untrackedVolumeUSD,
-            newUniswapToken.tradeVolumeUSD,
-            newUniswapToken.txCount,
-            newUniswapToken.derivedETH
-            )
+        if (!isTokenAlreadyInDatabase) {
+          tokensToInsert.push({
+            symbol: newUniswapToken.symbol,
+            name: newUniswapToken.name,
+            decimals: newUniswapToken.decimals,
+            totalSupply: newUniswapToken.totalSupply,
+            tradeVolume: newUniswapToken.tradeVolume,
+            untrackedVolumeUSD: newUniswapToken.untrackedVolumeUSD,
+            tradeVolumeUSD: newUniswapToken.tradeVolumeUSD,
+            txCount: newUniswapToken.txCount,
+            derivedETH: newUniswapToken.derivedETH
+          })
         }
       }
-    }).catch((error) => {
-      console.error('insertUniswapToken error', error)
+
+      const result = await insertUniswapToken(tokensToInsert).catch(error => {
+          console.log('insertUniswapToken', error)
+        })
+
     })
-    numberOfTokens + tokensPerQuery;
-    console.log(loopNumber, numberOfTokens)
+    numberOfTokensQueried = numberOfTokensQueried + tokensPerQuery;
+    console.log(loopNumber, numberOfTokensQueried)
     console.timeEnd('numberOfLoops')
   }
 }

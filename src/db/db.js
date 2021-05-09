@@ -1,30 +1,40 @@
 const { Pool, Client } = require('pg')
-const pool = new Pool()
 
 // the pool will emit an error on behalf of any idle clients
 // it contains if a backend error or network partition happens
-pool.on('error', (err, client) => {
-  console.error('Unexpected error on idle client', err)
-  process.exit(-1)
-})
+// pool.on('error', (err, client) => {
+//   console.error('Unexpected error on idle client', err)
+//   process.exit(-1)
+// })
 
-function query(sql, prams) {
+async function query(sql, prams, multipleQueries = false) {
 
-  const client = new Client()
-  client.connect()
+  const pool = new Pool()
+  const results = [];
 
-  const result = new Promise(async (resolve, reject) => {
-      await client.query(sql, prams).then( data => {
+  if(multipleQueries) {
+    for (let i = 0; i < prams.length; i++) {
+      const currentRowPrams = prams[i];
+      const result = await pool.query(sql, [currentRowPrams.symbol, currentRowPrams.name, currentRowPrams.decimals, currentRowPrams.totalSupply, currentRowPrams.tradeVolume, currentRowPrams.untrackedVolumeUSD, currentRowPrams.tradeVolumeUSD, currentRowPrams.txCount, currentRowPrams.derivedETH])
+      results.push(result)
+    }
+    console.log(results)
+    await pool.end()
+    return results
+  } else {
+    const result = new Promise(async (resolve, reject) => {
+      await pool.query(sql, prams).then( data => {
         resolve(data)
       }).catch(error => {
         console.log('db error', error)
         reject(error)
       })
-      await client.end()
-  });
-
-  return result;
+    });
+    return result;
+  }
 }
 
 
-module.exports = {query};
+module.exports = {
+  query: (sql, prams, multipleQueries) => query(sql, prams, multipleQueries)
+};
