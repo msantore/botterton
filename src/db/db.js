@@ -15,10 +15,9 @@ async function query(sql, prams, multipleQueries = false) {
   if(multipleQueries) {
     for (let i = 0; i < prams.length; i++) {
       const currentRowPrams = prams[i];
-      const result = await pool.query(sql, [currentRowPrams.symbol, currentRowPrams.name, currentRowPrams.decimals, currentRowPrams.totalSupply, currentRowPrams.tradeVolume, currentRowPrams.untrackedVolumeUSD, currentRowPrams.tradeVolumeUSD, currentRowPrams.txCount, currentRowPrams.derivedETH])
+      const result = await pool.query(sql, [currentRowPrams.symbol, currentRowPrams.name, currentRowPrams.decimals, currentRowPrams.totalSupply, currentRowPrams.tradeVolume, currentRowPrams.untrackedVolumeUSD, currentRowPrams.tradeVolumeUSD, currentRowPrams.txCount, currentRowPrams.derivedETH, currentRowPrams.id])
       results.push(result)
     }
-    console.log(results)
     await pool.end()
     return results
   } else {
