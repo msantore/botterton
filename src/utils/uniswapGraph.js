@@ -9,7 +9,7 @@ const queryUniswapAPI = async (dbTokens) => {
   let currentQuery = numberOfTokensQueried + tokensPerQuery;
   let lastId = ""
   let loopNumber = 0
-  if (dbTokens.lenth > 0) {
+  if (dbTokens.length > 0) {
     lastId = dbTokens[dbTokens.length -1].uniswap_id
   }
 
@@ -41,33 +41,40 @@ const queryUniswapAPI = async (dbTokens) => {
       }
     }).then(async (response) => {
       const {tokens: uniswapTokens} = response.data.data;
-      for (let i = 0; i < uniswapTokens.length; i++) {
-        const newUniswapToken = uniswapTokens[i];
-        const isTokenAlreadyInDatabase = dbTokens.find(token => token.uniswap_id === newUniswapToken.uniswap_id)
-        // if Token is not in Postgres, insert row
-        if (!isTokenAlreadyInDatabase) {
-          tokensToInsert.push({
-            id: newUniswapToken.id,
-            symbol: newUniswapToken.symbol,
-            name: newUniswapToken.name,
-            decimals: newUniswapToken.decimals,
-            totalSupply: newUniswapToken.totalSupply,
-            tradeVolume: newUniswapToken.tradeVolume,
-            untrackedVolumeUSD: newUniswapToken.untrackedVolumeUSD,
-            tradeVolumeUSD: newUniswapToken.tradeVolumeUSD,
-            txCount: newUniswapToken.txCount,
-            derivedETH: newUniswapToken.derivedETH
-          })
+      if (uniswapTokens.length > 0) {
+        for (let i = 0; i < uniswapTokens.length; i++) {
+          const newUniswapToken = uniswapTokens[i];
+          const isTokenAlreadyInDatabase = dbTokens.find(token => token.uniswap_id === newUniswapToken.uniswap_id)
+          // if Token is not in Postgres, insert row
+          if (!isTokenAlreadyInDatabase) {
+            tokensToInsert.push({
+              id: newUniswapToken.id,
+              symbol: newUniswapToken.symbol,
+              name: newUniswapToken.name,
+              decimals: newUniswapToken.decimals,
+              totalSupply: newUniswapToken.totalSupply,
+              tradeVolume: newUniswapToken.tradeVolume,
+              untrackedVolumeUSD: newUniswapToken.untrackedVolumeUSD,
+              tradeVolumeUSD: newUniswapToken.tradeVolumeUSD,
+              txCount: newUniswapToken.txCount,
+              derivedETH: newUniswapToken.derivedETH
+            })
+          }
         }
-      }
-
-      const result = await insertUniswapToken(tokensToInsert).catch(error => {
+        const result = await insertUniswapToken(tokensToInsert).catch(error => {
           console.log('insertUniswapToken', error)
         })
-        lastId = uniswapTokens[uniswapTokens.length - 1].id
+        
+        if (uniswapTokens.length > 0) {
+          lastId = uniswapTokens[uniswapTokens.length - 1].id
+        }
+        numberOfTokensQueried = numberOfTokensQueried + tokensPerQuery;
+        console.log(loopNumber, numberOfTokensQueried, lastId)
+      } else {
+        console.log('end of Tokens')
+        process.exit(1)
+      }
     })
-    numberOfTokensQueried = numberOfTokensQueried + tokensPerQuery;
-    console.log(loopNumber, numberOfTokensQueried, lastId)
     console.timeEnd('numberOfLoops')
   }
 }
