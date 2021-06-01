@@ -21,7 +21,7 @@ const queryUniswapAPI = async (dbTokens) => {
     let tokensToInsert = [];
     await axios.post('https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v2', {
       query: `query ($lastID: String) {
-          tokens(first: 1000, where: { id_gt: $lastID  }) {
+          tokens(orderBy: id, orderDirection: asc, first: 1000, where: { id_gt: $lastID  }) {
             id,
             symbol,
             name,
