@@ -4,16 +4,22 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
   },
   "author": "santore.tech",
   "license": "ISC",
   "dependencies": {
+    "@babel/node": "^7.13.13",
+    "axios": "^0.21.1",
     "commander": "^7.2.0",
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
     "ethereumjs-util": "^7.0.10",
     "ethereumjs-wallet": "^1.0.1",
-    "express": "^4.17.1"
+    "ethers": "^5.1.4",
+    "express": "^4.17.1",
+    "graphql": "^15.5.0",
+    "pg": "^8.6.0"
   }
 }
